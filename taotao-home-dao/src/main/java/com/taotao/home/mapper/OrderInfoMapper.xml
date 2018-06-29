@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.taotao.home.mapper.OrderInfoMapper">
+	<resultMap id="BaseResultMap" type="com.taotao.home.pojo.OrderInfo">
+		<id column="order_id" property="orderId" jdbcType="VARCHAR" />
+		<result column="payment" property="payment" jdbcType="VARCHAR" />
+		<result column="payment_type" property="paymentType" jdbcType="INTEGER" />
+		<result column="post_fee" property="postFee" jdbcType="VARCHAR" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="payment_time" property="paymentTime" jdbcType="TIMESTAMP" />
+		<result column="consign_time" property="consignTime" jdbcType="TIMESTAMP" />
+		<result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+		<result column="close_time" property="closeTime" jdbcType="TIMESTAMP" />
+		<result column="shipping_name" property="shippingName" jdbcType="VARCHAR" />
+		<result column="shipping_code" property="shippingCode" jdbcType="VARCHAR" />
+		<result column="user_id" property="userId" jdbcType="BIGINT" />
+		<result column="buyer_message" property="buyerMessage" jdbcType="VARCHAR" />
+		<result column="buyer_nick" property="buyerNick" jdbcType="VARCHAR" />
+		<result column="buyer_rate" property="buyerRate" jdbcType="INTEGER" />
+	</resultMap>
+	<resultMap type="com.taotao.home.pojo.OrderInfo" id="orderInfoResultMap" extends="BaseResultMap">
+		<association property="user" javaType="com.taotao.pojo.TbUser">
+			<id column="user_id" property="id" />
+			<result column="username" property="username" />
+		</association>
+		<collection property="items" ofType="com.taotao.pojo.TbOrderItem">
+			<id column="oiid" property="id" />
+			<result column="item_id" property="itemId" />
+			<result column="num" property="num" />
+			<result column="pic_path" property="picPath" />
+			<result column="price" property="price" />
+			<result column="title" property="title" />
+			<result column="total_fee" property="totalFee" />
+		</collection>
+	</resultMap>
+	<select id="getOrderList" parameterType="com.taotao.home.pojo.OrderQuery" resultMap="orderInfoResultMap">
+		SELECT
+			o.order_id,
+			o.payment,
+			o.payment_type,
+			o.post_fee,
+			o. STATUS,
+			o.create_time,
+			o.update_time,
+			o.payment_time,
+			o.consign_time,
+			o.end_time,
+			o.close_time,
+			o.shipping_name,
+			o.shipping_code,
+			o.user_id,
+			o.buyer_message,
+			o.buyer_nick,
+			o.buyer_rate,
+			oi.id oiid,
+			oi.item_id,
+			oi.num,
+			oi.pic_path,
+			oi.price,
+			oi.title,
+			oi.total_fee,
+			u.username
+		FROM
+			tb_order o
+		LEFT JOIN tb_order_item oi ON o.order_id = oi.order_id
+		LEFT JOIN tb_user u ON o.user_id = u.id
+		<where>
+			AND	u.id = #{userId}
+			<if test="status != null">
+				<foreach collection="status" item="s" open="AND o.`status` IN (" close=")" separator=",">
+					#{s}				
+				</foreach>
+			</if>
+			<if test="keyword != null and keyword !=''">
+				AND (o.order_id = #{keyword}
+					or o.order_id in (
+						SELECT DISTINCT
+							a.order_id
+						FROM
+							tb_order a
+						JOIN tb_order_item b ON a.order_id = b.order_id
+						WHERE
+							a.user_id = #{userId}
+						AND b.title LIKE '%${keyword}%'
+					)
+					or o.order_id in(
+						SELECT DISTINCT
+							c.order_id
+						FROM
+							tb_order c
+						JOIN tb_order_item d ON c.order_id = d.order_id
+						WHERE
+							c.user_id = #{userId}
+						AND d.item_id = #{keyword}
+					)
+				)
+			</if>
+			<if test="startDate!=null and endDate!=null">
+				AND (
+					o.create_time <![CDATA[>=]]> #{startDate}
+					AND o.create_time <![CDATA[<=]]> #{endDate}
+				)
+			</if>
+		</where>
+	</select>
+</mapper>

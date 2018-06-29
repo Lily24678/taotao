@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="UTF-8">
+	<title>${title}</title>
+	</head>
+<body>
+	学生信息如下：
+	<br/>
+	学号：${stu.id}
+	<br/>
+	姓名：${stu.name}
+	<br/>
+	年龄：${stu.age}
+	<br/>
+	地址：${stu.address}
+	<br/>
+	<br/>
+	学生列表：
+	<br/>
+	<table border="1px">
+		<tr>
+			<th>序号</th>
+			<th>学号</th>
+			<th>姓名</th>
+			<th>年龄</th>
+			<th>地址</th>
+		</tr>
+		<#list stuList as student>
+			<#if student_index%2==0>
+				<tr bgcolor="red">
+				<#else>
+				<tr bgcolor="blue">
+			</#if>
+				<td>${student_index}</td>
+				<td>${student.id}</td>
+				<td>${student.name}</td>
+				<td>${student.age}</td>
+				<td>${student.address}</td>
+			</tr>
+		</#list>
+	</table>
+	<br><br>
+	null值问题：
+	<br>
+	mytest：${mytest!"默认值"}
+	<font color="red">（ 如果没有值可以设定默认值，如果有值就取你存的值）</font>
+	<br>
+	null处理：
+	<#if mytest?? >
+		mytest不为空时，值为 :${mytest}
+		<#else>
+		mytest为空时
+	</#if>
+	<br><br>
+	日期处理：
+	<br>
+	当前日期：${date?date}<br>
+	当前时间：${date?time}<br>
+	当前日期和时间：${date?datetime}<br>
+	自定义日期格式：${date?string("yyyy/MM/dd HH:mm:ss")}
+	
+	<br><br>
+	页面模板的引用：
+	<#include "hello.ftl">
+</body>
+</html>
